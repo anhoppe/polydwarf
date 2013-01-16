@@ -1,0 +1,37 @@
+Required
+--------
+
+10.01.13
+--------
+- display mouse raster position
+- display number of points in current polygon
+- display polygon points (currently only segments are displayed)
+- make polygon points move-able with the mouse.
+
+
+15.01.13
+--------
+- BUG: delete points->num points not correctly updated.
+- Req: Rotate polygon left / right
+- Req: Copy polygon to clippboard
+- Req: Paste polygon from clippboard
+
+16.01.13
+--------
+- REQ: Translate left/top/right/bottom
+- REQ: Visualize Start / End Point
+
+Done
+----
+
+11.01.13
+--------
+- display mouse raster position
+- display number of points in current polygon
+- display polygon points (currently only segments are displayed)
+- draw active as last
+
+14.01.13
+--------
+- Req: Copy polygon to clippboard
+- Req: Paste polygon from clippboard
