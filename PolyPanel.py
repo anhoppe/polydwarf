@@ -16,8 +16,9 @@ AXIS_HELP_LINE_LEN = 3
 
 class PolyPanel(wx.Panel):
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent, wx.ID_ANY)
+        wx.Panel.__init__(self, parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NO_FULL_REPAINT_ON_RESIZE)
         
+        self.Bind(wx.EVT_SIZE, self.onSize)
         self.Bind(wx.EVT_PAINT, self.onPaint)
         self.Bind(wx.EVT_MOTION, self.onMouseMove)
         self.Bind(wx.EVT_LEFT_UP, self.onLButtonUp)
@@ -40,27 +41,25 @@ class PolyPanel(wx.Panel):
         self.polygonIndex = 0
         self.parent = parent
         
+        self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
+        
     def setGraphSize(self, size):
         self.rasterSize = size
         
     def onPolygonNew(self, event):
         self.polygonVault.append([])
         self.polygonIndex = len(self.polygonVault)-1
-        
-        self.Update()
-        self.Refresh()
+        self.updateDrawing()
     
     def onPolygonClear(self, event):
         self.polygonVault[self.polygonIndex] = []
-        self.Update()
-        self.Refresh()
+        self.updateDrawing()
 
     def onPolygonClearAll(self, event):
         self.polygonVault = []
         self.polygonVault.append([])
         self.polygonIndex = 0
-        self.Update()
-        self.Refresh()
+        self.updateDrawing()
     
     def onPolygonNext(self, event):
         if self.polygonIndex < len(self.polygonVault)-1:
@@ -74,19 +73,18 @@ class PolyPanel(wx.Panel):
             
     def onPolygonReset(self, event):
         self.polygonVault[self.polygonIndex] = event.attr1
-        self.Update()
-        self.Refresh()
+        self.updateDrawing()
         
     def onRasterResize(self, event):
         self.rasterSize = event.attr1
-        self.Update()
-        self.Refresh()
+        self.updateDrawing()
                 
     def onLButtonUp(self, event):
         self.polygonVault[self.polygonIndex].append(self.rasterPosition)
 
         pointAddEvent = PointAddEvent(attr1=self.rasterPosition[0], attr2=self.rasterPosition[1])
         wx.PostEvent(self.parent, pointAddEvent)
+        self.updateDrawing()
         
     def onMouseMove(self, event):
         x, y = event.GetPosition()
@@ -97,15 +95,29 @@ class PolyPanel(wx.Panel):
             self.rasterPosition = newPosition
             rasterPositionEvent = RasterPositionEvent(attr1=newPosition)
             wx.PostEvent(self.parent, rasterPositionEvent)
-            self.Update()
-            self.Refresh() 
+            self.updateDrawing()
+            
+    def onSize(self, event):
+        size = self.ClientSize
+        self._buffer = wx.EmptyBitmap(*size)
+        self.updateDrawing()
             
     def onPaint(self, event):
-        dc = wx.PaintDC(self)
+        dc = wx.BufferedPaintDC(self, self._buffer)
+
+    def updateDrawing(self):
+        dc = wx.MemoryDC()
+        dc.SelectObject(self._buffer)
         
+        dc.SetBackground( wx.Brush("White") )
+        dc.Clear() # make sure you clear the bitmap!
         self.drawRaster(dc)
         self.drawMouseRasterPoint(dc)
-        self.drawPolygons(dc)        
+        self.drawPolygons(dc)    
+        
+        del dc # need to get rid of the MemoryDC before Update() is called.
+        self.Update()        
+        self.Refresh(eraseBackground=False)
 
     def drawRaster(self, dc):
         w, h = self.GetSize()
