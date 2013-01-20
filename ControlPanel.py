@@ -149,7 +149,8 @@ class ControlPanel(wx.Panel):
     def onButtonPaste(self, event):
         self.textOutput.SetSelection(-1, -1)
         self.textOutput.Paste()
-    
+        self.displayPolygon()
+        
     def onSpinPolySelectionUp(self, event):
         polygonNextEvent = PolygonNextEvent()
         wx.PostEvent(self.parent, polygonNextEvent)
@@ -160,8 +161,7 @@ class ControlPanel(wx.Panel):
         wx.PostEvent(self.parent, polygonPrevEvent)
     
     def onTextEnterPolygon(self, event):
-        polygonResetEvent = PolygonResetEvent(attr1 = self.getPolygonAsPointPairs())
-        wx.PostEvent(self.parent, polygonResetEvent)
+        self.displayPolygon()
     
     def onPointAdd(self, event):
         text = self.textOutput.GetValue()
@@ -203,6 +203,10 @@ class ControlPanel(wx.Panel):
         
         rasterSizeEvent = RasterResizeEvent(attr1 = size)
         wx.PostEvent(self.parent, rasterSizeEvent)
+    
+    def displayPolygon(self):
+        polygonResetEvent = PolygonResetEvent(attr1 = self.getPolygonAsPointPairs())
+        wx.PostEvent(self.parent, polygonResetEvent)
             
     def getPolygonAsPointPairs(self):
         text = self.textOutput.GetValue()
