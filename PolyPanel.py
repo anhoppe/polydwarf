@@ -65,11 +65,13 @@ class PolyPanel(wx.Panel):
         if self.polygonIndex < len(self.polygonVault)-1:
             self.polygonIndex += 1
             self.refreshPolygon()
+            self.updateDrawing()
     
     def onPolygonPrev(self, event):
         if self.polygonIndex > 0:
             self.polygonIndex -= 1
             self.refreshPolygon()
+            self.updateDrawing()
             
     def onPolygonReset(self, event):
         self.polygonVault[self.polygonIndex] = event.attr1

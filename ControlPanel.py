@@ -154,7 +154,6 @@ class ControlPanel(wx.Panel):
     def onSpinPolySelectionUp(self, event):
         polygonNextEvent = PolygonNextEvent()
         wx.PostEvent(self.parent, polygonNextEvent)
-        event.Skip()
     
     def onSpinPolySelectionDown(self, event):
         polygonPrevEvent = PolygonPrevEvent()
