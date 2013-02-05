@@ -12,6 +12,7 @@ from CustomEvents import EVT_POLYGON_REFRESH
 from CustomEvents import EVT_POLYGON_RESET
 from CustomEvents import EVT_RASTER_RESIZE
 from CustomEvents import EVT_RASTER_POSITION
+from CustomEvents import EVT_HELP_LINES
 
 class MainFrame(wx.Frame):
     def __init__(self):
@@ -40,7 +41,8 @@ class MainFrame(wx.Frame):
         self.Bind(EVT_POLYGON_PREV, self.onPolyPanelEvent)
         self.Bind(EVT_POLYGON_RESET, self.onPolyPanelEvent)
         self.Bind(EVT_RASTER_RESIZE, self.onPolyPanelEvent)
- 
+        self.Bind(EVT_HELP_LINES, self.onPolyPanelEvent)
+        
     def onControlPanelEvent(self, event):
         self.Update()
         self.Refresh()
@@ -48,4 +50,5 @@ class MainFrame(wx.Frame):
         
     def onPolyPanelEvent(self, event):
         self.polyPanel.ProcessEvent(event)
+        
     

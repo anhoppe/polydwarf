@@ -12,6 +12,7 @@ from CustomEvents import PolygonNextEvent
 from CustomEvents import PolygonResetEvent 
 from CustomEvents import RasterResizeEvent
 from CustomEvents import RasterPositionEvent
+from CustomEvents import HelpLineEvent
 
 BUTTON_NEW = 1000
 BUTTON_CLEAR = 1001
@@ -21,7 +22,7 @@ TEXT_POLYGON = 1004
 TEXT_RASTER_SIZE = 1005
 BUTTON_COPY = 1006
 BUTTON_PASTE = 1007
-
+BUTTON_HELP_LINE = 1008
 
 
 class ControlPanel(wx.Panel):
@@ -111,6 +112,9 @@ class ControlPanel(wx.Panel):
         copyPasteSizer.Add(self.buttonPaste, 0)
         self.Bind(wx.EVT_BUTTON, self.onButtonPaste, self.buttonPaste)
         
+        self.buttonHelpLine = wx.Button(self, BUTTON_HELP_LINE, "Help Line")
+        copyPasteSizer.Add(self.buttonHelpLine, 0)
+        self.Bind(wx.EVT_BUTTON, self.onButtonHelpLine, self.buttonHelpLine)
         
         
         sizer.Add(outSizer, 1, wx.EXPAND)
@@ -150,6 +154,10 @@ class ControlPanel(wx.Panel):
         self.textOutput.SetSelection(-1, -1)
         self.textOutput.Paste()
         self.displayPolygon()
+       
+    def onButtonHelpLine(self, event):
+        helpLineEvent = HelpLineEvent()
+        wx.PostEvent(self.parent, helpLineEvent)
         
     def onSpinPolySelectionUp(self, event):
         polygonNextEvent = PolygonNextEvent()

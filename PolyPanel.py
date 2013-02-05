@@ -1,3 +1,7 @@
+import math
+
+from numpy import *
+
 import wx
 
 from CustomEvents import EVT_POLYGON_NEW
@@ -7,6 +11,7 @@ from CustomEvents import EVT_POLYGON_NEXT
 from CustomEvents import EVT_POLYGON_PREV
 from CustomEvents import EVT_POLYGON_RESET
 from CustomEvents import EVT_RASTER_RESIZE
+from CustomEvents import EVT_HELP_LINES
 
 from CustomEvents import PointAddEvent
 from CustomEvents import PolygonRefreshEvent
@@ -30,7 +35,7 @@ class PolyPanel(wx.Panel):
         self.Bind(EVT_POLYGON_PREV, self.onPolygonPrev)
         self.Bind(EVT_POLYGON_RESET, self.onPolygonReset)
         self.Bind(EVT_RASTER_RESIZE, self.onRasterResize)
-        
+        self.Bind(EVT_HELP_LINES, self.onHelpLine)
         
         self.rasterSize = 5
         self.rasterPosition = 0, 0
@@ -39,9 +44,14 @@ class PolyPanel(wx.Panel):
         self.polygonVault = []
         self.polygonVault.append([])
         self.polygonIndex = 0
+        
+        self.helpLines = []
+        
         self.parent = parent
         
         self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
+        
+        self.directionArrow = wx.Image('directionArrow.png', wx.BITMAP_TYPE_ANY)
         
     def setGraphSize(self, size):
         self.rasterSize = size
@@ -75,6 +85,11 @@ class PolyPanel(wx.Panel):
             
     def onPolygonReset(self, event):
         self.polygonVault[self.polygonIndex] = event.attr1
+        self.updateDrawing()
+    
+    def onHelpLine(self, event):
+        polygon  = self.polygonVault.pop(self.polygonIndex)
+        self.helpLines.append(polygon)
         self.updateDrawing()
         
     def onRasterResize(self, event):
@@ -116,6 +131,7 @@ class PolyPanel(wx.Panel):
         self.drawRaster(dc)
         self.drawMouseRasterPoint(dc)
         self.drawPolygons(dc)    
+        self.drawHelpLines(dc)
         
         del dc # need to get rid of the MemoryDC before Update() is called.
         self.Update()        
@@ -183,10 +199,52 @@ class PolyPanel(wx.Panel):
             
         if drawPoints:
             for point in polygon:
-                cx, cy = self.rasterToScreenPosition(point)
-                dc.DrawCircle(cx, cy, 3)
+                index = polygon.index(point)
+                if len(polygon)-1 > index:
+                    
+                    #arrow = self.directionArrow.Rotate(math.atan(math.fabs(ny-cy)/math.fabs(nx-cx)), wx.Point(4,4)).ConvertToBitmap()
+                    #arrow = self.directionArrow.ConvertToBitmap()
+                    self.drawDirectionArrow(dc, point, polygon[index+1])
+                else:
+                    cx, cy = self.rasterToScreenPosition(point)
+                    dc.DrawCircle(cx, cy, 3)
                 
+    def drawDirectionArrow(self, dc, curr, next):
+        angle = 2.8
+        rotMatrix = array([[cos(angle), -sin(angle)], 
+                           [sin(angle), cos(angle)]])
+                          
+        rotMatrix2 = array([[cos(-angle), -sin(-angle)], 
+                            [sin(-angle), cos(-angle)]])
 
+        currPoint = array([float(curr[0]), float(curr[1])])
+        nextPoint = array([float(next[0]), float(next[1])])
+        
+        vec = (nextPoint-currPoint)
+        vec = vec / linalg.norm(vec) * (float(self.rasterSize)/15.)
+        endPoint = currPoint + vec
+        
+        arrow1 = rotMatrix.dot(vec)
+        arrow2 = rotMatrix2.dot(vec)
+        
+        arrow1 = arrow1 + endPoint
+        arrow2 = arrow2 + endPoint
+        
+        x, y = self.rasterToScreenPosition([endPoint[0], endPoint[1]])
+        x2, y2 = self.rasterToScreenPosition([arrow1[0], arrow1[1]])
+        x3, y3 = self.rasterToScreenPosition([arrow2[0], arrow2[1]])
+        
+        dc.DrawLine(x, y, x2, y2)
+        dc.DrawLine(x, y, x3, y3)
+        
+    def drawHelpLines(self, dc):
+        pen = wx.Pen(wx.LIGHT_GREY)
+        pen.SetStyle(wx.STIPPLE)
+        dc.SetPen(pen)
+        
+        for helpLine in self.helpLines:
+            drawPolygon(dc, helpLine, False)
+        
     def refreshPolygon(self):
         self.Update()
         self.Refresh()
