@@ -51,8 +51,6 @@ class PolyPanel(wx.Panel):
         
         self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         
-        self.directionArrow = wx.Image('directionArrow.png', wx.BITMAP_TYPE_ANY)
-        
     def setGraphSize(self, size):
         self.rasterSize = size
         
@@ -89,6 +87,7 @@ class PolyPanel(wx.Panel):
     
     def onHelpLine(self, event):
         polygon  = self.polygonVault.pop(self.polygonIndex)
+        self.polygonVault.append([])
         self.helpLines.append(polygon)
         self.updateDrawing()
         
@@ -184,8 +183,10 @@ class PolyPanel(wx.Panel):
             count += 1
         
         #draw active polygon
-        dc.SetPen(wx.Pen(wx.RED))
-        self.drawPolygon(dc, self.polygonVault[self.polygonIndex], True)
+        print self.polygonIndex
+        if -1 != self.polygonIndex:
+            dc.SetPen(wx.Pen(wx.RED))
+            self.drawPolygon(dc, self.polygonVault[self.polygonIndex], True)
             
     def drawPolygon(self, dc, polygon, drawPoints):
         
@@ -201,9 +202,6 @@ class PolyPanel(wx.Panel):
             for point in polygon:
                 index = polygon.index(point)
                 if len(polygon)-1 > index:
-                    
-                    #arrow = self.directionArrow.Rotate(math.atan(math.fabs(ny-cy)/math.fabs(nx-cx)), wx.Point(4,4)).ConvertToBitmap()
-                    #arrow = self.directionArrow.ConvertToBitmap()
                     self.drawDirectionArrow(dc, point, polygon[index+1])
                 else:
                     cx, cy = self.rasterToScreenPosition(point)
@@ -238,12 +236,13 @@ class PolyPanel(wx.Panel):
         dc.DrawLine(x, y, x3, y3)
         
     def drawHelpLines(self, dc):
-        pen = wx.Pen(wx.LIGHT_GREY)
+        pen = wx.Pen(wx.CYAN)
+        #wx.SetColor(wx.GREEN)
         pen.SetStyle(wx.STIPPLE)
         dc.SetPen(pen)
         
         for helpLine in self.helpLines:
-            drawPolygon(dc, helpLine, False)
+            self.drawPolygon(dc, helpLine, False)
         
     def refreshPolygon(self):
         self.Update()
