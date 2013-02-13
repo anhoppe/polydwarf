@@ -13,6 +13,7 @@ from CustomEvents import PolygonResetEvent
 from CustomEvents import RasterResizeEvent
 from CustomEvents import RasterPositionEvent
 from CustomEvents import HelpLineEvent
+from CustomEvents import TogglePolygonTypeEvent
 
 BUTTON_NEW = 1000
 BUTTON_CLEAR = 1001
@@ -23,6 +24,7 @@ TEXT_RASTER_SIZE = 1005
 BUTTON_COPY = 1006
 BUTTON_PASTE = 1007
 BUTTON_HELP_LINE = 1008
+BUTTON_POLYGON_TYPE = 1009
 
 
 class ControlPanel(wx.Panel):
@@ -59,6 +61,7 @@ class ControlPanel(wx.Panel):
         sizeSizer.Add(self.textRasterPosition, 1, wx.ALL, 5)
         
         
+        
 		# add the sizer top sizer with size / raster info
         sizer.Add(sizeSizer, 0)
         
@@ -85,10 +88,12 @@ class ControlPanel(wx.Panel):
         commandSizer = wx.BoxSizer(wx.VERTICAL)
         newDeleteSizer = wx.BoxSizer(wx.HORIZONTAL)
         copyPasteSizer = wx.BoxSizer(wx.HORIZONTAL)
+        polygonHatchSizer = wx.BoxSizer(wx.HORIZONTAL)
         
         outSizer.Add(commandSizer)
         commandSizer.Add(newDeleteSizer)
         commandSizer.Add(copyPasteSizer)
+        commandSizer.Add(polygonHatchSizer)
         
         # create control for new delete sizer (buttons for new, clear, clear all)
         self.buttonNew = wx.Button(self, BUTTON_NEW, "New")
@@ -116,6 +121,10 @@ class ControlPanel(wx.Panel):
         copyPasteSizer.Add(self.buttonHelpLine, 0)
         self.Bind(wx.EVT_BUTTON, self.onButtonHelpLine, self.buttonHelpLine)
         
+        # create control for polygon/hatch controls
+        self.buttonPolygonType = wx.Button(self, BUTTON_POLYGON_TYPE, "To Hatch")
+        polygonHatchSizer.Add(self.buttonPolygonType, 0)
+        self.Bind(wx.EVT_BUTTON, self.onButtonPolygonType, self.buttonPolygonType)
         
         sizer.Add(outSizer, 1, wx.EXPAND)
         
@@ -158,7 +167,11 @@ class ControlPanel(wx.Panel):
     def onButtonHelpLine(self, event):
         helpLineEvent = HelpLineEvent()
         wx.PostEvent(self.parent, helpLineEvent)
-        
+    
+    def onButtonPolygonType(self, event):
+        togglePolygonTypeEvent = TogglePolygonTypeEvent()
+        wx.PostEvent(self.parent, togglePolygonTypeEvent)
+            
     def onSpinPolySelectionUp(self, event):
         polygonNextEvent = PolygonNextEvent()
         wx.PostEvent(self.parent, polygonNextEvent)
@@ -198,6 +211,12 @@ class ControlPanel(wx.Panel):
         
         self.nofPoints = len(event.attr1)
         self.displayNofPoints()
+        
+        # set the state of the Polygon / Hatch button
+        if 0 == event.attr2:
+            self.buttonPolygonType.SetLabel("To Hatch")
+        else:
+            self.buttonPolygonType.SetLabel("To Polygon")
 
     def onRasterPosition(self, event):
         text = str(event.attr1[0])

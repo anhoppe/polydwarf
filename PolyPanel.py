@@ -12,6 +12,7 @@ from CustomEvents import EVT_POLYGON_PREV
 from CustomEvents import EVT_POLYGON_RESET
 from CustomEvents import EVT_RASTER_RESIZE
 from CustomEvents import EVT_HELP_LINES
+from CustomEvents import EVT_TOGGLE_POLYGON_TYPE
 
 from CustomEvents import PointAddEvent
 from CustomEvents import PolygonRefreshEvent
@@ -36,6 +37,7 @@ class PolyPanel(wx.Panel):
         self.Bind(EVT_POLYGON_RESET, self.onPolygonReset)
         self.Bind(EVT_RASTER_RESIZE, self.onRasterResize)
         self.Bind(EVT_HELP_LINES, self.onHelpLine)
+        self.Bind(EVT_TOGGLE_POLYGON_TYPE, self.onTogglePolygonType)
         
         self.rasterSize = 5
         self.rasterPosition = 0, 0
@@ -43,6 +45,7 @@ class PolyPanel(wx.Panel):
         self.polygon = []
         self.polygonVault = []
         self.polygonVault.append([])
+        self.polygonTypeMap = {0:0}
         self.polygonIndex = 0
         
         self.helpLines = []
@@ -57,6 +60,7 @@ class PolyPanel(wx.Panel):
     def onPolygonNew(self, event):
         self.polygonVault.append([])
         self.polygonIndex = len(self.polygonVault)-1
+        self.polygonTypeMap[self.polygonIndex] = 0
         self.updateDrawing()
     
     def onPolygonClear(self, event):
@@ -66,6 +70,7 @@ class PolyPanel(wx.Panel):
     def onPolygonClearAll(self, event):
         self.polygonVault = []
         self.polygonVault.append([])
+        self.polygonTypeMap = {0 : 0}
         self.polygonIndex = 0
         self.updateDrawing()
     
@@ -89,6 +94,13 @@ class PolyPanel(wx.Panel):
         polygon  = self.polygonVault.pop(self.polygonIndex)
         self.polygonVault.append([])
         self.helpLines.append(polygon)
+        self.updateDrawing()
+    
+    def onTogglePolygonType(self, event):
+        if 0 == self.polygonTypeMap[self.polygonIndex]:
+            self.polygonTypeMap[self.polygonIndex] = 1
+        else:
+            self.polygonTypeMap[self.polygonIndex] = 0
         self.updateDrawing()
         
     def onRasterResize(self, event):
@@ -179,17 +191,22 @@ class PolyPanel(wx.Panel):
         
         for polygon in self.polygonVault:
             if count <> self.polygonIndex:
-                self.drawPolygon(dc, polygon, False)
+                if 0 == self.polygonTypeMap[count]:
+                    self.drawPolygon(dc, polygon, False)
+                else:
+                    self.drawHatch(dc, polygon)
             count += 1
         
         #draw active polygon
-        print self.polygonIndex
         if -1 != self.polygonIndex:
+            polygon = self.polygonVault[self.polygonIndex]
             dc.SetPen(wx.Pen(wx.RED))
-            self.drawPolygon(dc, self.polygonVault[self.polygonIndex], True)
+            if 0 == self.polygonTypeMap[self.polygonIndex]:
+                self.drawPolygon(dc, polygon, True)
+            else:
+                self.drawHatch(dc, polygon)
             
-    def drawPolygon(self, dc, polygon, drawPoints):
-        
+    def drawPolygon(self, dc, polygon, drawPoints):        
         if len(polygon) > 1:
             px, py = self.rasterToScreenPosition(polygon[0])
             
@@ -206,6 +223,14 @@ class PolyPanel(wx.Panel):
                 else:
                     cx, cy = self.rasterToScreenPosition(point)
                     dc.DrawCircle(cx, cy, 3)
+    
+    def drawHatch(self, dc, polygon):
+        if len(polygon) > 1:
+            for i in xrange(0, len(polygon)-1, 2):
+                x1, y1 = self.rasterToScreenPosition(polygon[i])
+                x2, y2 = self.rasterToScreenPosition(polygon[i+1])
+                dc.DrawLine(x1, y1, x2, y2)
+                
                 
     def drawDirectionArrow(self, dc, curr, next):
         angle = 2.8
@@ -247,7 +272,7 @@ class PolyPanel(wx.Panel):
     def refreshPolygon(self):
         self.Update()
         self.Refresh()
-        polygonRefreshEvent = PolygonRefreshEvent(attr1=self.polygonVault[self.polygonIndex])
+        polygonRefreshEvent = PolygonRefreshEvent(attr1=self.polygonVault[self.polygonIndex], attr2=self.polygonTypeMap[self.polygonIndex])
         wx.PostEvent(self.parent, polygonRefreshEvent)
         
     def screenToRasterPosition(self, screenPosition):
