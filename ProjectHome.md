@@ -1,0 +1,2 @@
+Very simple Python program that can be used to create 2D polygons. The polygon data (point coordinates) can be accessed via a text field.
+Helpful if you need the point coordinates in of a polygon in textual form. Don't expect anything, the program is dead-simple.
