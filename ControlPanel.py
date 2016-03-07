@@ -1,3 +1,4 @@
+import math
 import wx
 
 from CustomEvents import EVT_POINT_ADD
@@ -59,6 +60,12 @@ class ControlPanel(wx.Panel):
 		
         self.textRasterPosition = wx.TextCtrl(self, wx.ID_ANY, "0/0", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY)
         sizeSizer.Add(self.textRasterPosition, 1, wx.ALL, 5)
+
+        # Add the distance form cursor to previously set point
+        sizeSizer.Add(wx.StaticText(self, wx.ID_ANY, "Dist to prev:"), 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5)
+
+        self.textDistToPrev = wx.TextCtrl(self, wx.ID_ANY, "-/-", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY)
+        sizeSizer.Add(self.textDistToPrev, 1, wx.ALL, 5)
         
         
         
@@ -219,10 +226,17 @@ class ControlPanel(wx.Panel):
             self.buttonPolygonType.SetLabel("To Polygon")
 
     def onRasterPosition(self, event):
-        text = str(event.attr1[0])
+        # convert current raster position to string
+        currentPosition = event.attr1
+        text = str(currentPosition[0])
         text += "/"
-        text += str(event.attr1[1])
+        text += str(currentPosition[1])
         self.textRasterPosition.SetValue(text)
+
+        # calculate distance to previous position
+        prevPosition = event.attr2
+        dist = math.sqrt((currentPosition[0] - prevPosition[0]) * (currentPosition[0] - prevPosition[0]) + (currentPosition[1] - prevPosition[1]) * (currentPosition[1] - prevPosition[1]))
+        self.textDistToPrev.SetValue(str(dist))
         
     def onTextRasterSize(self, event):
         size = int(self.textSize.GetValue())

@@ -41,6 +41,7 @@ class PolyPanel(wx.Panel):
         
         self.rasterSize = 5
         self.rasterPosition = 0, 0
+        self.prevRasterPosition = 0, 0
         self.screenPosition = 0, 0
         self.polygon = []
         self.polygonVault = []
@@ -109,6 +110,7 @@ class PolyPanel(wx.Panel):
                 
     def onLButtonUp(self, event):
         self.polygonVault[self.polygonIndex].append(self.rasterPosition)
+        self.prevRasterPosition = self.rasterPosition
 
         pointAddEvent = PointAddEvent(attr1=self.rasterPosition[0], attr2=self.rasterPosition[1])
         wx.PostEvent(self.parent, pointAddEvent)
@@ -121,7 +123,7 @@ class PolyPanel(wx.Panel):
         
         if newPosition != self.rasterPosition:
             self.rasterPosition = newPosition
-            rasterPositionEvent = RasterPositionEvent(attr1=newPosition)
+            rasterPositionEvent = RasterPositionEvent(attr1=newPosition, attr2=self.prevRasterPosition)
             wx.PostEvent(self.parent, rasterPositionEvent)
             self.updateDrawing()
             

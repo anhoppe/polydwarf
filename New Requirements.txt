@@ -35,3 +35,8 @@ Done
 --------
 - Req: Copy polygon to clippboard
 - Req: Paste polygon from clippboard
+
+07.03.16
+--------
+- Display coordinate lines around cursor
+- Display distance to previous position
