@@ -158,11 +158,12 @@ class PolyPanel(wx.Panel):
         
         wHalf = w/2 
         hHalf = h/2
+
         # draw the axes
         dc.DrawLine(0, hHalf, w, hHalf)
         dc.DrawLine(wHalf, 0, wHalf, h)
         
-        ##draw the axis help lines
+        # draw the axis help lines
         for i in range(1, self.rasterSize):
             xRasterDist = i*wHalf / self.rasterSize
             yRasterDist = i*hHalf / self.rasterSize
@@ -175,6 +176,16 @@ class PolyPanel(wx.Panel):
                         wHalf+AXIS_HELP_LINE_LEN, hHalf + yRasterDist)
             dc.DrawLine(wHalf, hHalf - yRasterDist,
                         wHalf-AXIS_HELP_LINE_LEN, hHalf - yRasterDist)
+
+        # draw the cursor position lines
+
+        dc.SetPen(wx.Pen(wx.LIGHT_GREY, style=wx.DOT_DASH))
+        yPos = (-self.rasterPosition[1] + self.rasterSize) * hHalf / self.rasterSize
+        dc.DrawLine(0, yPos, w, yPos)
+
+        xPos = (self.rasterPosition[0] + self.rasterSize) * wHalf / self.rasterSize
+        dc.DrawLine(xPos, 0, xPos, h)
+
             
     def drawMouseRasterPoint(self, dc):
         brush = wx.Brush(wx.RED)

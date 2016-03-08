@@ -1,6 +1,8 @@
 import math
 import wx
 
+from Tkinter import Tk
+            
 from CustomEvents import EVT_POINT_ADD
 from CustomEvents import EVT_POLYGON_REFRESH
 from CustomEvents import EVT_RASTER_POSITION
@@ -16,6 +18,8 @@ from CustomEvents import RasterPositionEvent
 from CustomEvents import HelpLineEvent
 from CustomEvents import TogglePolygonTypeEvent
 
+from As3DPolygonDialog import As3DPolygon
+
 BUTTON_NEW = 1000
 BUTTON_CLEAR = 1001
 BUTTON_CLEAR_ALL = 1002
@@ -26,6 +30,7 @@ BUTTON_COPY = 1006
 BUTTON_PASTE = 1007
 BUTTON_HELP_LINE = 1008
 BUTTON_POLYGON_TYPE = 1009
+BUTTON_AS_3D_POLYGON = 1010
 
 
 class ControlPanel(wx.Panel):
@@ -132,6 +137,11 @@ class ControlPanel(wx.Panel):
         self.buttonPolygonType = wx.Button(self, BUTTON_POLYGON_TYPE, "To Hatch")
         polygonHatchSizer.Add(self.buttonPolygonType, 0)
         self.Bind(wx.EVT_BUTTON, self.onButtonPolygonType, self.buttonPolygonType)
+
+        # add the As 3D button
+        self.buttonAs3DPolygon = wx.Button(self, BUTTON_AS_3D_POLYGON, "As 3D...")
+        polygonHatchSizer.Add(self.buttonAs3DPolygon, 0)
+        self.Bind(wx.EVT_BUTTON, self.onButtonAs3DPolygon, self.buttonAs3DPolygon)
         
         sizer.Add(outSizer, 1, wx.EXPAND)
         
@@ -178,6 +188,13 @@ class ControlPanel(wx.Panel):
     def onButtonPolygonType(self, event):
         togglePolygonTypeEvent = TogglePolygonTypeEvent()
         wx.PostEvent(self.parent, togglePolygonTypeEvent)
+
+    def onButtonAs3DPolygon(self, event):
+        as3DPolygonDialog = As3DPolygon(self)
+
+        if as3DPolygonDialog.ShowModal() == wx.ID_OK:
+            self.copyToClipboardAsPolygon3D(as3DPolygonDialog.textX.GetValue(), as3DPolygonDialog.textY.GetValue(), as3DPolygonDialog.textZ.GetValue())
+
             
     def onSpinPolySelectionUp(self, event):
         polygonNextEvent = PolygonNextEvent()
@@ -273,3 +290,42 @@ class ControlPanel(wx.Panel):
             formated = str(val)
         
         return formated 
+
+    def copyToClipboardAsPolygon3D(self, xTo, yTo, zTo):
+        polygon3D = ""
+
+        coordinates = self.getPolygonAsPointPairs()
+        
+
+        for coordinate in coordinates:
+            if xTo.lower() == "x":
+                x = coordinate[0]
+            elif xTo.lower() == "y":
+                x = coordinate[1]
+            else:
+                x = double(xTo)
+
+            if yTo.lower() == "x":
+                y = coordinate[0]
+            elif yTo.lower() == "y":
+                y = coordinate[1]
+            else:
+                print(yTo)
+                print(int(yTo))
+                y = int(yTo)
+
+            if zTo.lower() == "x":
+                z = coordinate[0]
+            elif zTo.lower() == "y":
+                z = coordinate[1]
+            else:
+                z = int(zTo)
+
+            polygon3D = polygon3D + str(x) + ", " + str(y) + ", " + str(z) + ", "
+            
+            r = Tk()
+            r.withdraw()
+            r.clipboard_clear()
+            r.clipboard_append(polygon3D)
+            r.destroy()
+        
